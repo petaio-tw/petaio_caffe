@@ -1,0 +1,105 @@
+version: 1.0.{build}
+
+branches:
+  only:
+    - master
+    - development
+  except:
+    - /dev/     # You can use Regular expression to match multiple branch name(s)
+    - windows-2019
+
+clone_folder: c:\projects\synopsys-caffe
+
+environment:
+  matrix:
+    - MSVC_VERSION: 14
+      WITH_NINJA: 0
+      CMAKE_CONFIG: Release
+      CMAKE_BUILD_SHARED_LIBS: 0
+      PYTHON_VERSION: 3.6
+      WITH_CUDA: 0
+
+#    - MSVC_VERSION: 14
+#      WITH_NINJA: 0
+#      CMAKE_CONFIG: Release
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 3.5
+#      WITH_CUDA: 0
+
+#    - MSVC_VERSION: 14
+#      WITH_NINJA: 0
+#      CMAKE_CONFIG: Release
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 0
+
+#    - MSVC_VERSION: 14
+#      WITH_NINJA: 0
+#      CMAKE_CONFIG: Debug
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 0
+#
+#    - MSVC_VERSION: 14
+#      WITH_NINJA: 1
+#      CMAKE_CONFIG: Release
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 0
+#
+#    - MSVC_VERSION: 14
+#      WITH_NINJA: 1
+#      CMAKE_CONFIG: Debug
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 0
+#      
+#    - MSVC_VERSION: 14
+#      WITH_NINJA: 1
+#      CMAKE_CONFIG: Release
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 1
+#      
+#    - MSVC_VERSION: 14
+#      WITH_NINJA: 1
+#      CMAKE_CONFIG: Release
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 3
+#      WITH_CUDA: 1        
+
+#    - MSVC_VERSION: 12
+#      WITH_NINJA: 0
+#      CMAKE_CONFIG: Release
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 0
+#
+#    - MSVC_VERSION: 12
+#      WITH_NINJA: 0
+#      CMAKE_CONFIG: Debug
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 0
+#
+#    - MSVC_VERSION: 12
+#      WITH_NINJA: 1
+#      CMAKE_CONFIG: Release
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 0
+#
+#    - MSVC_VERSION: 12
+#      WITH_NINJA: 1
+#      CMAKE_CONFIG: Debug
+#      CMAKE_BUILD_SHARED_LIBS: 0
+#      PYTHON_VERSION: 2
+#      WITH_CUDA: 0
+
+build_script:
+- cmd: >-
+    call scripts\build_win.cmd
+
+artifacts:
+  - path: build\install
+    name: synopsys-caffe
