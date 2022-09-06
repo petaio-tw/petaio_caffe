@@ -556,7 +556,7 @@ message LayerParameter {
   optional MVNParameter mvn_param = 120;
   optional NormalizeParameter norm_param = 206;
   optional ParameterParameter parameter_param = 145;
-  optional PermuteParameter permute_param = 202;
+  //optional PermuteParameter permute_param = 202;
   optional PoolingParameter pooling_param = 121;
   optional Pooling3DParameter pooling3d_param = 266;
   optional PowerParameter power_param = 122;
@@ -588,7 +588,7 @@ message LayerParameter {
   optional ThresholdParameter threshold_param = 128;
   optional TileParameter tile_param = 138;
   optional UniqueLabelParameter unique_label_param = 170;
-  optional UpsampleParameter upsample_param = 177;
+  //optional UpsampleParameter upsample_param = 177;
   optional VideoDataParameter video_data_param = 207;
   optional WindowDataParameter window_data_param = 129;
 
@@ -610,10 +610,11 @@ message LayerParameter {
   optional bool reshape_every_iter = 157 [default = true];
 
   //Yolo related
-  optional ReorgParameter reorg_param = 197;
+  //optional ReorgParameter reorg_param = 197;
   optional YoloV2LossParameter yolo_v2_loss_param = 198;
   optional YoloV3LossParameter yolo_v3_loss_param = 199;
   optional UpsampleDarknetParameter upsample_darknet_param = 209; // Darknet layer used in yolov3
+  optional UpsampleDarknetMyParameter upsample_darknet_my_param = 299; // Darknet layer used in yolov3
 
   //TensorFlow related
   optional DepthToSpaceParameter depth_to_space_param = 208;
@@ -686,6 +687,11 @@ message LayerParameter {
   
   // custom
  optional Corr1dParameter corr1d_param = 281;
+   
+   //yolov5
+  optional PermuteParameter permute_param = 290;
+  optional Upsample2Parameter upsample2_param = 291;
+  optional ReorgParameter reorg_param = 292;
 }  
 
 message AccumParameter {
@@ -2146,12 +2152,6 @@ message ParameterParameter {
   optional BlobShape shape = 1;
 }
 
-message PermuteParameter {
-  // The new orders of the axes of data. Notice it should be with
-  // in the same range as the input data, and it starts from 0.
-  // Do not provide repeated order.
-  repeated uint32 order = 1;
-}
 
 message PoolingParameter {
   enum PoolMethod {
@@ -2880,27 +2880,32 @@ message UniqueLabelParameter {
 message UpsampleDarknetParameter {
   optional int32 stride = 1 [default = 1];	// darknet calls it "stride".
 }
-
-message UpsampleParameter {
-  // DEPRECATED. No need to specify upsampling scale factors when
-  // exact output shape is given by upsample_h, upsample_w parameters.
-  optional uint32 scale = 1 [default = 2];
-  // DEPRECATED. No need to specify upsampling scale factors when
-  // exact output shape is given by upsample_h, upsample_w parameters.
-  optional uint32 scale_h = 2;
-  // DEPRECATED. No need to specify upsampling scale factors when
-  // exact output shape is given by upsample_h, upsample_w parameters.
-  optional uint32 scale_w = 3;
-  // DEPRECATED. Specify exact output height using upsample_h. This
-  // parameter only works when scale is 2
-  optional bool pad_out_h = 4 [default = false];
-  // DEPRECATED. Specify exact output width using upsample_w. This
-  // parameter only works when scale is 2
-  optional bool pad_out_w = 5 [default = false];
-  optional uint32 upsample_h = 6;
-  optional uint32 upsample_w = 7;
+message UpsampleDarknetMyParameter {
+  optional int32 stride2 = 1 [default = 1];	// darknet calls it "stride".
 }
 
+message PermuteParameter {
+  // The new orders of the axes of data. Notice it should be with
+  // in the same range as the input data, and it starts from 0.
+  // Do not provide repeated order.
+  repeated uint32 order = 1;
+}
+
+message Upsample2Parameter {		
+	optional int32 height = 1 [default = 32];
+	optional int32 width = 2 [default = 32];
+	optional int32 height_scale = 3 [default = 2];
+	optional int32 width_scale = 4 [default = 2];
+	enum UpsampleOp {
+		NEAREST = 0;
+		BILINEAR = 1;
+	}
+	optional UpsampleOp mode = 5 [default = NEAREST];
+}
+message ReorgParameter {
+  optional uint32 stride = 1;
+  optional bool reverse = 2 [default = false];
+}
 message VideoDataParameter{
   enum VideoType {
     WEBCAM = 0;
@@ -3194,10 +3199,6 @@ message PReLUParameter {
   optional bool channel_shared = 2 [default = false];
 }
 
-message ReorgParameter {
-  optional uint32 stride = 1;
-  optional bool reverse = 2 [default = false];
-}
 
 message DepthToSpaceParameter {
   // implementation of tf.depth_to_space

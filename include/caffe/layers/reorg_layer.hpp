@@ -82,30 +82,38 @@ namespace caffe {
     }
 
     template<typename Dtype>
-    void reorg_cpu(const Dtype *bottom_data, const int b_w, const int b_h,
-                   const int b_c, const int b_n, const int stride,
-                   const bool forward, Dtype *top_data) {
-        int t_c = b_c / (stride * stride);
-        int t_w = b_w * stride;
-        int t_h = b_h * stride;
-        for (int n = 0; n < b_n; n++) {
-            for (int c = 0; c < b_c; c++) {
-                for (int h = 0; h < b_h; h++) {
-                    for (int w = 0; w < b_w; w++) {
-                        int bottom_index = w + b_w * (h + b_h * (c + b_c * n));
-                        int c2 = c % t_c;
-                        int offset = c / t_c;
-                        int w2 = w * stride + offset % stride;
-                        int h2 = h * stride + offset / stride;
-                        int top_index = w2 + t_w * (h2 + t_h * (c2 + t_c * n));
-                        if (forward) top_data[top_index] = bottom_data[bottom_index];
-                        else
-                            top_data[bottom_index] = bottom_data[top_index];
-                    }
-                }
-            }
-        }
+    void reorg_cpu(const Dtype *srcData, const int width, const int height,
+                   const int channels, const int b_n, const int reorgStride,
+                   const bool forward, Dtype *dstData) {
+
+	int outChannels = channels * reorgStride * reorgStride;
+	int outHeight = height / reorgStride;
+	int outWidth = width / reorgStride;
+
+	for (int y = 0; y < outHeight; ++y) {
+		for (int x = 0; x < outWidth; ++x) {
+			for (int c = 0; c < outChannels; ++c) {
+				int out_index = x + outWidth*(y + outHeight*c);
+
+				int step = c / channels;
+				int x_offset = step % reorgStride;
+				int y_offset = reorgStride * ((step / reorgStride) % reorgStride);
+
+				int in_x = x * reorgStride + x_offset;
+				
+				int out_seq_y = y + c*outHeight;
+				int in_intermediate_y = out_seq_y*2 - out_seq_y%2;
+				in_intermediate_y = in_intermediate_y % (channels*height);
+				int in_c = in_intermediate_y / height;
+				int in_y = in_intermediate_y % height + y_offset;
+						
+				int in_index = in_x + width*(in_y + height*in_c);
+				dstData[out_index] = srcData[in_index];
+			}
+		}
+	}
     }
+
 
 
 }  // namespace caffe

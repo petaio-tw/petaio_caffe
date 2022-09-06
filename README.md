@@ -2,7 +2,7 @@
 
 
 
-Petaio Caffe is a modified version of the popular [Synopsys Caffe ](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/).
+Petaio Caffe is a modified version of the [Synopsys Caffe ](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/).
 
 Synopsys Caffe is a modified version of the popular [Caffe Deep Learning framework](http://caffe.berkeleyvision.org/) adapted for use with DesignWare EV Family of  Processors.
 It combines multiple customized branches and includes a large range of patches to support diverse models. See [FEATURES.md](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/master/FEATURES.md) for a short overview.

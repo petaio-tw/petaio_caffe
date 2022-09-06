@@ -3,36 +3,37 @@
 
 namespace caffe {
     template <typename Dtype>
-    __global__ void reorg_kernel(const Dtype *x, int w, int h, int c, int batch, int stride, int forward, Dtype *out)
-    {
-        int size = batch*c*h*w;
-        int i = (blockIdx.x + blockIdx.y*gridDim.x) * blockDim.x + threadIdx.x;
-        if(i >= size) return;
-        int in_index = i;
-        int in_w = i%w;
-        i = i/w;
-        int in_h = i%h;
-        i = i/h;
-        int in_c = i%c;
-        i = i/c;
-        int b = i%batch;
+    __global__ void reorg_kernel(const Dtype *srcData,
+                             const int in_w, const int in_h,
+                             const int in_c, const int batch,
+                             const int stride, int forward, Dtype *dstData) {
+      int64_t gid = (blockDim.x * blockIdx.x) + threadIdx.x;
+      int64_t step = gridDim.x * blockDim.x;
+      int out_c = in_c * stride * stride;
+      int out_h = in_h / stride;
+      int out_w = in_w / stride;
+      int out_elements = out_w * out_h * out_c * batch;
+      while (gid < out_elements) {
+        int remain = gid;
+        int out_b_idx = remain / out_c / out_h  / out_w;
+        remain = remain % (out_c * out_h * out_w);
+        int out_c_idx = remain / out_h  / out_w;
+        remain = remain % (out_h * out_w);
+        int out_h_idx = remain / out_w;
+        int out_w_idx = remain % out_w; 
+     
+        int in_c_idx = out_c_idx / stride / stride;
+        int in_inner_c_idx = out_c_idx % (stride * stride);
+        int in_inner_h_idx = in_inner_c_idx / stride;
+        int in_inner_w_idx = in_inner_c_idx % stride;
 
-        int out_c = c/(stride*stride);
+        int in_h_idx = out_h_idx * stride + in_inner_h_idx;
+        int in_w_idx = out_w_idx * stride + in_inner_w_idx;
 
-        int c2 = in_c % out_c;
-        int offset = in_c / out_c;
-        int w2 = in_w*stride + offset % stride;
-        int h2 = in_h*stride + offset / stride;
-        int out_index = w2 + w*stride*(h2 + h*stride*(c2 + out_c*b));
-
-        if(forward)
-        {
-            out[out_index] = x[in_index];
-        }         
-        else
-        {
-            out[in_index] = x[out_index];
-        }
+        int in_idx = out_b_idx * in_c * in_w * in_h + in_c_idx * in_w * in_h + in_h_idx * in_w + in_w_idx;
+        dstData[gid] = srcData[in_idx];
+        gid += step;
+      }
     }
 
     template<typename Dtype>
@@ -40,11 +41,6 @@ namespace caffe {
                                         const vector<Blob<Dtype> *> &top) {
         const Dtype *bottom_data = bottom[0]->gpu_data();
         int count = bottom[0]->count();
-        vector<int> bottom_shape = bottom[0]->shape();
-        vector<int> top_shape = top[0]->shape();
-        width_ = bottom_shape[2];
-        height_ = bottom_shape[3];
-        top[0]->Reshape(bottom_shape[0],top_shape[1],width_/2,height_/2);
         Dtype *top_data = top[0]->mutable_gpu_data();
         reorg_kernel<Dtype>
          <<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(bottom_data, width_, height_,
